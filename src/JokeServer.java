@@ -43,8 +43,8 @@ import java.net.UnknownHostException;
 public class JokeServer {
 
     private static boolean jokeMode;
-    private final static String JOKE_MODE = "Joke Mode";
-    private final static String PROVERB_MODE = "Proverb Mode";
+    private final static String JOKE_MODE = "joke mode";
+    private final static String PROVERB_MODE = "proverb mode";
 
     public static void main(String[] args) throws IOException {
         int qLen = 6;
@@ -65,24 +65,15 @@ public class JokeServer {
 
         // program runs in infinite loop, unless exception is thrown
         while (true) {
-            // if admin tries to connect, the server socket will accept its connection and return a socket
-            Socket adminSocket = serverSocketForAdmin.accept();
-            BufferedReader in = new BufferedReader(new InputStreamReader(adminSocket.getInputStream()));
-            PrintStream out = new PrintStream(adminSocket.getOutputStream());
-            String jokeOrProverb = in.readLine();
-            if (jokeOrProverb.equalsIgnoreCase("joke")) {
-                jokeMode = true;
-            } else if (jokeOrProverb.equalsIgnoreCase("proverb")) {
-                jokeMode = false;
-            } else {
-                out.println("Invalid entry. Please enter either joke or proverb to change mode.");
-            }
+            serverSocketForAdmin.accept();
+            jokeMode = !jokeMode;
+            System.out.println("Server now in " + getMode());
 
             // if any clients try to connect, the serverSocket will accept their connections and return a socket
-            Socket clientSocket = serverSocketForClients.accept();
+//            Socket clientSocket = serverSocketForClients.accept();
             // this socket is passed to a new thread that is spawned (an instance of the Worker class) and start
             // is called on this thread, kicking off the processes in the Worker class run method.
-            new Worker(clientSocket).start();
+//            new Worker(clientSocket).start();
         }
     }
 
@@ -102,7 +93,7 @@ class Worker extends Thread {
     public void run() {
         try {
             // creating a reader to read the data coming in to the socket from the client
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             // creating a stream to write to the socket, sending data back to the client
             PrintStream out = new PrintStream(socket.getOutputStream());
 

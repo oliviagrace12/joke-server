@@ -1,8 +1,8 @@
-You know why you never see elephants hiding up in trees? Because they’re really good at it.
-What is red and smells like blue paint? Red paint.
-Why aren’t koalas actual bears? The don’t meet the koalafications.
-What do you call bears with no ears? B.
-Actions speak louder than words.
-A journey of a thousand miles begins with a single step.
-A watched pot never boils.
-Birds of a feather flock together.
+JA You know why you never see elephants hiding up in trees? Because they’re really good at it.
+JB What is red and smells like blue paint? Red paint.
+JC Why aren’t koalas actual bears? The don’t meet the koalafications.
+JD What do you call bears with no ears? B.
+PA Actions speak louder than words.
+PB A journey of a thousand miles begins with a single step.
+PC A watched pot never boils.
+PD Birds of a feather flock together.
