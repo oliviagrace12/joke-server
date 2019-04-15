@@ -9,7 +9,7 @@ import java.net.Socket;
  */
 public class JokeClientAdmin {
 
-    private static int port = 5050;
+    private static int port = 5051;
 
     public static void main(String[] args) {
         String serverName;

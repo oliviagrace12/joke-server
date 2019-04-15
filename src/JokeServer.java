@@ -35,10 +35,7 @@ InetServer.java
 ----------------------------------------------------------*/
 
 import java.io.*;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.*;
 
 public class JokeServer {
 
@@ -48,37 +45,83 @@ public class JokeServer {
 
     public static void main(String[] args) throws IOException {
         int qLen = 6;
-        // defining the port on which to start the server socket
-        int clientPort = 4545;
-        int adminPort = 5050;
+        // defining the port on which to start the server socket for client connections
+        int clientPort = 4546;
+        // defining the port on which to start the server socket for admin connections
+        int adminPort = 5051;
 
         // setting to joke mode initially
         jokeMode = true;
 
-        // creating a server socket for clients to connect to
-        ServerSocket serverSocketForClients = new ServerSocket(clientPort, qLen);
-        // creating a server socket for admin to connect to
-        ServerSocket serverSocketForAdmin = new ServerSocket(adminPort, qLen);
+        // Creating new thread to handle client connections. Passing in server socket for clients to connect to
+        new ClientThread(new ServerSocket(clientPort, qLen)).start();
+        // Creating new thread to handle admin connections. Passing in server socket for admin to connect to
+        new AdminThread(new ServerSocket(adminPort, qLen)).start();
 
         // letting the user know that the server has started, and on which port
-        System.out.println("Olivia Chisman's Inet server 1.8 starting up in " + getMode() + " mode, listening to port " + clientPort + ".\n");
-
-        // program runs in infinite loop, unless exception is thrown
-        while (true) {
-            serverSocketForAdmin.accept();
-            jokeMode = !jokeMode;
-            System.out.println("Server now in " + getMode());
-
-            // if any clients try to connect, the serverSocket will accept their connections and return a socket
-//            Socket clientSocket = serverSocketForClients.accept();
-            // this socket is passed to a new thread that is spawned (an instance of the Worker class) and start
-            // is called on this thread, kicking off the processes in the Worker class run method.
-//            new Worker(clientSocket).start();
-        }
+        System.out.println("Olivia Chisman's Inet server 1.8 starting up in " + getModeName() + " mode, listening to port " + clientPort + ".\n");
     }
 
-    private static String getMode() {
+    public static String getModeName() {
+        // returns the joke mode string based on the jokeMode variable being true or not
         return jokeMode ? JOKE_MODE : PROVERB_MODE;
+    }
+
+    public static boolean isInJokeMode() {
+        return jokeMode;
+    }
+
+    public static void switchMode() {
+        // changes the joke mode variable to be true if it is false, and false if it is true
+        jokeMode = !jokeMode;
+    }
+}
+
+class ClientThread extends Thread {
+    private ServerSocket serverSocket;
+
+    public ClientThread(ServerSocket serverSocket) {
+        this.serverSocket = serverSocket;
+    }
+
+    public void run() {
+        // process runs in infinite loop, unless exception is thrown
+        while (true) {
+            // if any clients try to connect, the serverSocket will accept their connections and return a socket
+            Socket clientSocket = null;
+            try {
+                clientSocket = serverSocket.accept();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            // this socket is passed to a new thread that is spawned (an instance of the Worker class) and start
+            // is called on this thread, kicking off the processes in the Worker class run method.
+            if (clientSocket != null) {
+                new Worker(clientSocket).start();
+            }
+        }
+    }
+}
+
+class AdminThread extends Thread {
+    private ServerSocket serverSocket;
+
+    public AdminThread(ServerSocket serverSocket) {
+        this.serverSocket = serverSocket;
+    }
+
+    public void run() {
+        // process runs in infinite loop, unless exception is thrown
+        while (true) {
+            try {
+                // If any admins connect, the server mode variable with be switched to the opposite
+                serverSocket.accept();
+                JokeServer.switchMode();
+                System.out.println("Server now in " + JokeServer.getModeName());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
 
@@ -92,12 +135,16 @@ class Worker extends Thread {
 
     public void run() {
         try {
-            // creating a reader to read the data coming in to the socket from the client
-//            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             // creating a stream to write to the socket, sending data back to the client
             PrintStream out = new PrintStream(socket.getOutputStream());
 
-            out.println("What is red and smells like blue paint? Red paint.");
+            if (JokeServer.isInJokeMode()) {
+                // printing a joke to the socket to be read by the client
+                out.println("JOKE: What is red and smells like blue paint? Red paint.");
+            } else {
+                // printing a proverb to the socket to be read by the client
+                out.println("PROVERB: Actions speak louder than words.");
+            }
 
             // closing the connection with the client
             socket.close();

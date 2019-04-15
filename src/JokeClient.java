@@ -45,7 +45,7 @@ import java.net.Socket;
  */
 public class JokeClient {
 
-    private static int port = 4545;
+    private static int port = 4546;
 
     public static void main(String[] args) {
         String serverName;
