@@ -38,7 +38,6 @@ import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by oliviachisman on 4/7/19
@@ -80,11 +79,12 @@ public class JokeClient {
     }
 
     private static void getJoke(String serverName, BufferedReader fromConsole) {
+        // indexes to keep track of which joke or proverb to send
         int jokeIndex = 0;
         int proverbIndex = 0;
 
         try {
-            // reading from server
+            // variables to hold strings read from server and console
             String textFromServer;
             String textFromConsole;
 
@@ -94,23 +94,41 @@ public class JokeClient {
                 Socket socket = new Socket(serverName, port);
                 // creating a reader to read the data coming into the socket (coming from the server)
                 BufferedReader fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                // creating a stream to write to the socket, sending data to the server
                 PrintStream out = new PrintStream(socket.getOutputStream());
 
+                // reading the server mode from the socket, either joke or proverb
                 textFromServer = fromServer.readLine();
+                // different logic depending on joke or proverb mode
                 if (textFromServer.equalsIgnoreCase("joke")) {
-                    String joke = jokes.get(jokeIndex);
+                    // If in joke mode, get a joke from the joke list based on which joke index we are currently on.
+                    // Jokes are read in order as of now.
+                    // Add the client name to the joke string
+                    String joke = getFormattedMessage(name, jokes.get(jokeIndex));
+                    // Print joke to client console
                     System.out.println(joke);
-                    out.println(getMessageForServer(name, joke));
+                    // print joke to server to be saved in the log
+                    out.println(joke);
+                    // set next joke index
                     jokeIndex = getNewIndex(jokeIndex);
                 } else {
-                    String proverb = proverbs.get(proverbIndex);
+                    // If in proverb mode, get a proverb from the proverb list based on which proverb index we are currently on.
+                    // Proverbs are read in order as of now.
+                    // Add the client name to the proverb string
+                    String proverb = getFormattedMessage(name, proverbs.get(proverbIndex));
+                    // print proverb to client console
                     System.out.println(proverb);
-                    out.println(getMessageForServer(name, proverb));
+                    // print proverb to socket to be read by server and saved in log
+                    out.println(proverb);
+                    // increment proverb index
                     proverbIndex = getNewIndex(proverbIndex);
                 }
                 // closing the connection to the server
                 socket.close();
+                // wait for the user to press enter again
                 textFromConsole = fromConsole.readLine();
+                // if the user simply pressed enter (or typed anything other than quit), keep going.
+                // if the user entered quit, end the program
             } while (textFromConsole == null || !textFromConsole.equalsIgnoreCase("quit"));
 
 
@@ -122,10 +140,13 @@ public class JokeClient {
     }
 
     private static int getNewIndex(int currentIndex) {
+        // If current index is 0-2, increment the index. Otherwise, reset to zero.
+        // There are only 4 jokes and 4 proverbs.
         return currentIndex < 3 ? currentIndex + 1 : 0;
     }
 
-    private static String getMessageForServer(String name, String jokeOrProverb) {
+    private static String getFormattedMessage(String name, String jokeOrProverb) {
+        // split joke or proverb string on first space in order to insert the user name into the proper position
         String[] split = jokeOrProverb.split(" ", 2);
         return split[0] + " " + name + " " + split[1];
     }

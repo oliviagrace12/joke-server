@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.net.Socket;
 
 /**
@@ -26,26 +23,8 @@ public class JokeClientAdmin {
         try {
             // creating a socket with the specified port and server name with which to connect to the server.
             // The port should be the same as that of the server in order to connect to the server
+            // Each time the admin connects to the server, the server will switch modes.
             Socket socket = new Socket(serverName, port);
-
-            // creating a printstream to write to the server
-//            PrintStream toServer = new PrintStream(socket.getOutputStream());
-            // creating a reader to read input from the server
-//            BufferedReader fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            // creating a reader to read user input from the keyboard
-//            BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
-
-//            System.out.println("Please enter either joke or proverb to switch to desired server mode, or q to quit");
-//            String mode;
-//            do {
-//                mode = userInput.readLine();
-//                toServer.println(mode);
-//
-//                String error = fromServer.readLine();
-//                if (error != null) {
-//                    System.out.println(error);
-//                }
-//            } while (mode.equals("q"));
             // closing the connection to the server
             socket.close();
         } catch (IOException e) {

@@ -117,6 +117,7 @@ class AdminThread extends Thread {
                 // If any admins connect, the server mode variable with be switched to the opposite
                 serverSocket.accept();
                 JokeServer.switchMode();
+                // Logging server mode
                 System.out.println("Server now in " + JokeServer.getModeName());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -149,6 +150,7 @@ class Worker extends Thread {
                 // printing a proverb to the socket to be read by the client
                 toClient.println("PROVERB");
             }
+            // reading the joke or proverb back from the client, to be added to the JokeLog
             toConsole.println(fromClient.readLine());
 
 
