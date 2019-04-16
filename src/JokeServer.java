@@ -136,15 +136,21 @@ class Worker extends Thread {
     public void run() {
         try {
             // creating a stream to write to the socket, sending data back to the client
-            PrintStream out = new PrintStream(socket.getOutputStream());
+            PrintStream toClient = new PrintStream(socket.getOutputStream());
+            // creating a reader to read from the socket, retrieving data from the client
+            BufferedReader fromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            // creating a stream to write to the console
+            PrintStream toConsole = new PrintStream(System.out);
 
             if (JokeServer.isInJokeMode()) {
                 // printing a joke to the socket to be read by the client
-                out.println("JOKE: What is red and smells like blue paint? Red paint.");
+                toClient.println("JOKE");
             } else {
                 // printing a proverb to the socket to be read by the client
-                out.println("PROVERB: Actions speak louder than words.");
+                toClient.println("PROVERB");
             }
+            toConsole.println(fromClient.readLine());
+
 
             // closing the connection with the client
             socket.close();
