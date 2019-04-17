@@ -95,7 +95,7 @@ public class JokeClient {
                 // creating a reader to read the data coming into the socket (coming from the server)
                 BufferedReader fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 // creating a stream to write to the socket, sending data to the server
-                PrintStream out = new PrintStream(socket.getOutputStream());
+                PrintStream toServer = new PrintStream(socket.getOutputStream());
 
                 // reading the server mode from the socket, either joke or proverb
                 textFromServer = fromServer.readLine();
@@ -107,10 +107,12 @@ public class JokeClient {
                     String joke = getFormattedMessage(name, jokes.get(jokeIndex));
                     // Print joke to client console
                     System.out.println(joke);
+                    System.out.flush();
                     // print joke to server to be saved in the log
-                    out.println(joke);
+                    toServer.println(joke);
+                    toServer.flush();
                     // set next joke index
-                    jokeIndex = getNewIndex(jokeIndex);
+                    jokeIndex = getNewIndex(jokeIndex, toServer, "JOKE");
                 } else {
                     // If in proverb mode, get a proverb from the proverb list based on which proverb index we are currently on.
                     // Proverbs are read in order as of now.
@@ -118,10 +120,12 @@ public class JokeClient {
                     String proverb = getFormattedMessage(name, proverbs.get(proverbIndex));
                     // print proverb to client console
                     System.out.println(proverb);
+                    System.out.flush();
                     // print proverb to socket to be read by server and saved in log
-                    out.println(proverb);
+                    toServer.println(proverb);
+                    toServer.flush();
                     // increment proverb index
-                    proverbIndex = getNewIndex(proverbIndex);
+                    proverbIndex = getNewIndex(proverbIndex, toServer, "PROVERB");
                 }
                 // closing the connection to the server
                 socket.close();
@@ -139,10 +143,19 @@ public class JokeClient {
         }
     }
 
-    private static int getNewIndex(int currentIndex) {
+    private static int getNewIndex(int currentIndex, PrintStream toServer, String jokeOrProverb) {
         // If current index is 0-2, increment the index. Otherwise, reset to zero.
         // There are only 4 jokes and 4 proverbs.
-        return currentIndex < 3 ? currentIndex + 1 : 0;
+        if (currentIndex < 3) {
+            return currentIndex + 1;
+        }
+
+        String message = name + " " + jokeOrProverb + " CYCLE COMPLETED";
+        System.out.println(message);
+        System.out.flush();
+        toServer.println(message);
+        toServer.flush();
+        return 0;
     }
 
     private static String getFormattedMessage(String name, String jokeOrProverb) {

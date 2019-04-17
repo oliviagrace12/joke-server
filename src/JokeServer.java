@@ -44,6 +44,9 @@ public class JokeServer {
     private final static String PROVERB_MODE = "proverb mode";
 
     public static void main(String[] args) throws IOException {
+        File file = new File("LogFile.txt");
+        Writer fileWriter = new FileWriter(file, false);
+
         int qLen = 6;
         // defining the port on which to start the server socket for client connections
         int clientPort = 4546;
@@ -54,12 +57,16 @@ public class JokeServer {
         jokeMode = true;
 
         // Creating new thread to handle client connections. Passing in server socket for clients to connect to
-        new ClientThread(new ServerSocket(clientPort, qLen)).start();
+        new ClientThread(new ServerSocket(clientPort, qLen), fileWriter).start();
         // Creating new thread to handle admin connections. Passing in server socket for admin to connect to
-        new AdminThread(new ServerSocket(adminPort, qLen)).start();
+        new AdminThread(new ServerSocket(adminPort, qLen), fileWriter).start();
 
         // letting the user know that the server has started, and on which port
-        System.out.println("Olivia Chisman's Inet server 1.8 starting up in " + getModeName() + " mode, listening to port " + clientPort + ".\n");
+        String greeting = "Olivia Chisman's Inet server 1.8 starting up in " + getModeName()
+                + " mode, listening to port " + clientPort + ".\n";
+        System.out.println(greeting);
+        fileWriter.write(greeting + "\n");
+        fileWriter.flush();
     }
 
     public static String getModeName() {
@@ -79,9 +86,11 @@ public class JokeServer {
 
 class ClientThread extends Thread {
     private ServerSocket serverSocket;
+    private final Writer fileWriter;
 
-    public ClientThread(ServerSocket serverSocket) {
+    public ClientThread(ServerSocket serverSocket, Writer fileWriter) {
         this.serverSocket = serverSocket;
+        this.fileWriter = fileWriter;
     }
 
     public void run() {
@@ -97,7 +106,7 @@ class ClientThread extends Thread {
             // this socket is passed to a new thread that is spawned (an instance of the Worker class) and start
             // is called on this thread, kicking off the processes in the Worker class run method.
             if (clientSocket != null) {
-                new Worker(clientSocket).start();
+                new Worker(clientSocket, fileWriter).start();
             }
         }
     }
@@ -105,9 +114,11 @@ class ClientThread extends Thread {
 
 class AdminThread extends Thread {
     private ServerSocket serverSocket;
+    private Writer fileWriter;
 
-    public AdminThread(ServerSocket serverSocket) {
+    public AdminThread(ServerSocket serverSocket, Writer fileWriter) {
         this.serverSocket = serverSocket;
+        this.fileWriter = fileWriter;
     }
 
     public void run() {
@@ -118,7 +129,10 @@ class AdminThread extends Thread {
                 serverSocket.accept();
                 JokeServer.switchMode();
                 // Logging server mode
-                System.out.println("Server now in " + JokeServer.getModeName());
+                String serverStatus = "Server now in " + JokeServer.getModeName();
+                System.out.println(serverStatus);
+                fileWriter.write(serverStatus + "\n");
+                fileWriter.flush();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -129,9 +143,11 @@ class AdminThread extends Thread {
 class Worker extends Thread {
 
     private Socket socket;
+    private Writer fileWriter;
 
-    public Worker(Socket socket) {
+    public Worker(Socket socket, Writer fileWriter) {
         this.socket = socket;
+        this.fileWriter = fileWriter;
     }
 
     public void run() {
@@ -150,9 +166,20 @@ class Worker extends Thread {
                 // printing a proverb to the socket to be read by the client
                 toClient.println("PROVERB");
             }
-            // reading the joke or proverb back from the client, to be added to the JokeLog
-            toConsole.println(fromClient.readLine());
+            toClient.flush();
 
+            // reading the joke or proverb back from the client, to be added to the JokeLog
+            String jokeOrProverb = fromClient.readLine();
+            toConsole.println(jokeOrProverb);
+            fileWriter.write(jokeOrProverb + "\n");
+            fileWriter.flush();
+
+            String completedCycle = fromClient.readLine();
+            if (completedCycle != null) {
+                toConsole.println(completedCycle);
+                fileWriter.write(completedCycle + "\n");
+                fileWriter.flush();
+            }
 
             // closing the connection with the client
             socket.close();
