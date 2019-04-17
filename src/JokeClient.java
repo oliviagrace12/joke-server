@@ -175,6 +175,7 @@ public class JokeClient {
             toServer.println(message);
             toServer.flush();
 
+            // if cycle is restarting, shuffle list of jokes or proverbs
             Collections.shuffle(isJoke ? jokes : proverbs);
 
             return 0;
