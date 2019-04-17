@@ -37,6 +37,7 @@ InetServer.java
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -46,6 +47,8 @@ public class JokeClient {
 
     // port to connect to server
     private static final int PORT = 4545;
+    private static final String JOKE_STRING = "JOKE";
+    private static final String PROVERB_STRING = "PROVERB";
 
     // creating lists to be filled with jokes and proverbs
     private static List<String> jokes = new ArrayList<>();
@@ -64,6 +67,10 @@ public class JokeClient {
         proverbs.add("PB A journey of a thousand miles begins with a single step.");
         proverbs.add("PC A watched pot never boils.");
         proverbs.add("PD Birds of a feather flock together.");
+
+        // shuffling jokes and proverbs lists
+        Collections.shuffle(jokes);
+        Collections.shuffle(proverbs);
 
         String serverName;
 
@@ -111,7 +118,7 @@ public class JokeClient {
                 // reading the server mode from the socket, either joke or proverb
                 textFromServer = fromServer.readLine();
                 // different logic depending on joke or proverb mode
-                if (textFromServer.equalsIgnoreCase("joke")) {
+                if (textFromServer.equalsIgnoreCase(JOKE_STRING)) {
                     // If in joke mode, get a joke from the joke list based on which joke index we are currently on.
                     // Jokes are read in order as of now.
                     // Add the client name to the joke string
@@ -123,7 +130,7 @@ public class JokeClient {
                     toServer.println(joke);
                     toServer.flush();
                     // set next joke index
-                    jokeIndex = getNewIndex(jokeIndex, toServer, "JOKE");
+                    jokeIndex = getNewIndex(jokeIndex, toServer, true);
                 } else {
                     // If in proverb mode, get a proverb from the proverb list based on which proverb index we are currently on.
                     // Proverbs are read in order as of now.
@@ -136,7 +143,7 @@ public class JokeClient {
                     toServer.println(proverb);
                     toServer.flush();
                     // increment proverb index
-                    proverbIndex = getNewIndex(proverbIndex, toServer, "PROVERB");
+                    proverbIndex = getNewIndex(proverbIndex, toServer, false);
                 }
                 // closing the connection to the server
                 socket.close();
@@ -154,7 +161,7 @@ public class JokeClient {
         }
     }
 
-    private static int getNewIndex(int currentIndex, PrintStream toServer, String jokeOrProverb) {
+    private static int getNewIndex(int currentIndex, PrintStream toServer, boolean isJoke) {
         // If current index is 0-2, increment the index. Otherwise, reset to zero.
         // There are only 4 jokes and 4 proverbs.
         if (currentIndex < 3) {
@@ -162,11 +169,14 @@ public class JokeClient {
         } else {
             // if cycle is restarting (index is being reset to zero), then print cycle complete message
             // to console and server socket
-            String message = name + " " + jokeOrProverb + " CYCLE COMPLETED";
+            String message = name + " " + (isJoke ? JOKE_STRING : PROVERB_STRING) + " CYCLE COMPLETED";
             System.out.println(message);
             System.out.flush();
             toServer.println(message);
             toServer.flush();
+
+            Collections.shuffle(isJoke ? jokes : proverbs);
+
             return 0;
         }
     }
