@@ -44,11 +44,13 @@ import java.util.List;
  */
 public class JokeClient {
 
+    // port to connect to server
     private static final int PORT = 4545;
 
     // creating lists to be filled with jokes and proverbs
     private static List<String> jokes = new ArrayList<>();
     private static List<String> proverbs = new ArrayList<>();
+    // variable to store name from user
     private static String name;
 
     public static void main(String[] args) throws IOException {
