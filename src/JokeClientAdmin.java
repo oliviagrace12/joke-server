@@ -6,7 +6,7 @@ import java.net.Socket;
  */
 public class JokeClientAdmin {
 
-    private static int port = 5051;
+    private static final int PORT = 5050;
 
     public static void main(String[] args) {
         String serverName;
@@ -18,13 +18,13 @@ public class JokeClientAdmin {
         }
 
         System.out.println("Olivia Chisman's Inet client admin, 1.8.\n");
-        System.out.println("Using server: " + serverName + ", port: " + port);
+        System.out.println("Using server: " + serverName + ", PORT: " + PORT);
 
         try {
-            // creating a socket with the specified port and server name with which to connect to the server.
-            // The port should be the same as that of the server in order to connect to the server
+            // creating a socket with the specified PORT and server name with which to connect to the server.
+            // The PORT should be the same as that of the server in order to connect to the server
             // Each time the admin connects to the server, the server will switch modes.
-            Socket socket = new Socket(serverName, port);
+            Socket socket = new Socket(serverName, PORT);
             // closing the connection to the server
             socket.close();
         } catch (IOException e) {

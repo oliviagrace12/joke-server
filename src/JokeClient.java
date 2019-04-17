@@ -44,17 +44,20 @@ import java.util.List;
  */
 public class JokeClient {
 
-    private static int port = 4546;
+    private static final int PORT = 4545;
+
+    // creating lists to be filled with jokes and proverbs
     private static List<String> jokes = new ArrayList<>();
     private static List<String> proverbs = new ArrayList<>();
     private static String name;
 
     public static void main(String[] args) throws IOException {
+        // populating list of jokes
         jokes.add("JA You know why you never see elephants hiding up in trees? Because they’re really good at it.");
         jokes.add("JB What is red and smells like blue paint? Red paint.");
         jokes.add("JC Why aren’t koalas actual bears? The don’t meet the koalafications.");
         jokes.add("JD What do you call bears with no ears? B.");
-
+        // populating list of proverbs
         proverbs.add("PA Actions speak louder than words.");
         proverbs.add("PB A journey of a thousand miles begins with a single step.");
         proverbs.add("PC A watched pot never boils.");
@@ -62,17 +65,23 @@ public class JokeClient {
 
         String serverName;
 
+        // reading in server name from program arguments, or setting to default if none specified
         if (args.length >= 1) {
             serverName = args[0];
         } else {
             serverName = "localhost";
         }
 
+        // printing startup information to console
         System.out.println("Olivia Chisman's Inet client, 1.8.\n");
-        System.out.println("Using server: " + serverName + ", port: " + port);
+        System.out.println("Using server: " + serverName + ", PORT: " + PORT);
 
+        // creating reader to read user input from keyboard
         BufferedReader fromConsole = new BufferedReader(new InputStreamReader(System.in));
+        // requesting user input by printing to console
         System.out.print("Please enter your name: ");
+        // Reading user input from keyboard and storing in global variable for later use.
+        // This will always be this client's name
         name = fromConsole.readLine();
 
         getJoke(serverName, fromConsole);
@@ -89,9 +98,9 @@ public class JokeClient {
             String textFromConsole;
 
             do {
-                // creating a socket with the specified port and server name with which to connect to the server.
-                // The port should be the same as that of the server in order to connect to the server
-                Socket socket = new Socket(serverName, port);
+                // creating a socket with the specified PORT and server name with which to connect to the server.
+                // The PORT should be the same as that of the server in order to connect to the server
+                Socket socket = new Socket(serverName, PORT);
                 // creating a reader to read the data coming into the socket (coming from the server)
                 BufferedReader fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 // creating a stream to write to the socket, sending data to the server
@@ -148,14 +157,16 @@ public class JokeClient {
         // There are only 4 jokes and 4 proverbs.
         if (currentIndex < 3) {
             return currentIndex + 1;
+        } else {
+            // if cycle is restarting (index is being reset to zero), then print cycle complete message
+            // to console and server socket
+            String message = name + " " + jokeOrProverb + " CYCLE COMPLETED";
+            System.out.println(message);
+            System.out.flush();
+            toServer.println(message);
+            toServer.flush();
+            return 0;
         }
-
-        String message = name + " " + jokeOrProverb + " CYCLE COMPLETED";
-        System.out.println(message);
-        System.out.flush();
-        toServer.println(message);
-        toServer.flush();
-        return 0;
     }
 
     private static String getFormattedMessage(String name, String jokeOrProverb) {

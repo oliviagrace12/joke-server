@@ -39,33 +39,37 @@ import java.net.*;
 
 public class JokeServer {
 
+    // defining the port on which to start the server socket for client connections
+    private static final int CLIENT_PORT = 4545;
+    // defining the port on which to start the server socket for admin connections
+    private static final int ADMIN_PORT = 5050;
+    private static final String JOKE_MODE = "joke mode";
+    private static final String PROVERB_MODE = "proverb mode";
+
     private static boolean jokeMode;
-    private final static String JOKE_MODE = "joke mode";
-    private final static String PROVERB_MODE = "proverb mode";
 
     public static void main(String[] args) throws IOException {
+        // creating file to log the server's interactions with clients and admins
         File file = new File("LogFile.txt");
+        // creating a file writer to write to the file. It will overwrite the existing file every time the program starts
         Writer fileWriter = new FileWriter(file, false);
-
-        int qLen = 6;
-        // defining the port on which to start the server socket for client connections
-        int clientPort = 4546;
-        // defining the port on which to start the server socket for admin connections
-        int adminPort = 5051;
-
         // setting to joke mode initially
         jokeMode = true;
 
+        int qLen = 6;
         // Creating new thread to handle client connections. Passing in server socket for clients to connect to
-        new ClientThread(new ServerSocket(clientPort, qLen), fileWriter).start();
+        new ClientThread(new ServerSocket(CLIENT_PORT, qLen), fileWriter).start();
         // Creating new thread to handle admin connections. Passing in server socket for admin to connect to
-        new AdminThread(new ServerSocket(adminPort, qLen), fileWriter).start();
+        new AdminThread(new ServerSocket(ADMIN_PORT, qLen), fileWriter).start();
 
         // letting the user know that the server has started, and on which port
         String greeting = "Olivia Chisman's Inet server 1.8 starting up in " + getModeName()
-                + " mode, listening to port " + clientPort + ".\n";
+                + " mode, listening to port " + CLIENT_PORT + ".\n";
+        // writing to console
         System.out.println(greeting);
+        // writing to log file
         fileWriter.write(greeting + "\n");
+        // flushing to make sure writing gets done right away rather than when the file writer is closed
         fileWriter.flush();
     }
 
@@ -74,6 +78,7 @@ public class JokeServer {
         return jokeMode ? JOKE_MODE : PROVERB_MODE;
     }
 
+    // returns true if server is in joke mode
     public static boolean isInJokeMode() {
         return jokeMode;
     }
@@ -116,6 +121,7 @@ class AdminThread extends Thread {
     private ServerSocket serverSocket;
     private Writer fileWriter;
 
+    // takes a server socket to pass to the admin, as well as a file writer to log admin interactions to the log file
     public AdminThread(ServerSocket serverSocket, Writer fileWriter) {
         this.serverSocket = serverSocket;
         this.fileWriter = fileWriter;
@@ -131,6 +137,7 @@ class AdminThread extends Thread {
                 // Logging server mode
                 String serverStatus = "Server now in " + JokeServer.getModeName();
                 System.out.println(serverStatus);
+                // Writing mode change to log file
                 fileWriter.write(serverStatus + "\n");
                 fileWriter.flush();
             } catch (IOException e) {
@@ -145,6 +152,7 @@ class Worker extends Thread {
     private Socket socket;
     private Writer fileWriter;
 
+    // Worker takes a server socket to pass to the client, and a file writer to log the client interactions
     public Worker(Socket socket, Writer fileWriter) {
         this.socket = socket;
         this.fileWriter = fileWriter;
@@ -159,6 +167,7 @@ class Worker extends Thread {
             // creating a stream to write to the console
             PrintStream toConsole = new PrintStream(System.out);
 
+            // checking server mode
             if (JokeServer.isInJokeMode()) {
                 // printing a joke to the socket to be read by the client
                 toClient.println("JOKE");
@@ -174,7 +183,9 @@ class Worker extends Thread {
             fileWriter.write(jokeOrProverb + "\n");
             fileWriter.flush();
 
+            // reading one more time from client in case it is sending the end-of-cycle message
             String completedCycle = fromClient.readLine();
+            // if it gets an end-of-cycle message, print it to console and log file
             if (completedCycle != null) {
                 toConsole.println(completedCycle);
                 fileWriter.write(completedCycle + "\n");
