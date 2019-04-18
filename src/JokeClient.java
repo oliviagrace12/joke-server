@@ -185,6 +185,6 @@ public class JokeClient {
     private static String getFormattedMessage(String name, String jokeOrProverb) {
         // split joke or proverb string on first space in order to insert the user name into the proper position
         String[] split = jokeOrProverb.split(" ", 2);
-        return split[0] + " " + name + " " + split[1];
+        return split[0] + " " + name + ": " + split[1];
     }
 }

@@ -43,8 +43,8 @@ public class JokeServer {
     private static final int CLIENT_PORT = 4545;
     // defining the port on which to start the server socket for admin connections
     private static final int ADMIN_PORT = 5050;
-    private static final String JOKE_MODE = "joke mode";
-    private static final String PROVERB_MODE = "proverb mode";
+    private static final String JOKE_MODE = "JOKE MODE";
+    private static final String PROVERB_MODE = "PROVERB MODE";
 
     private static boolean jokeMode;
 
