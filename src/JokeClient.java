@@ -1,6 +1,6 @@
 /*--------------------------------------------------------
 
-1. Name / Date: Olivia Chisman / 4.9.19
+1. Name / Date: Olivia Chisman / 4.17.19
 
 2. Java version used, if not the official version for the class:
 
@@ -8,27 +8,29 @@ build 9.0.1+11
 
 3. Precise command-line compilation examples / instructions:
 
-> javac InetClient.java
+> javac JokeServer.java
 
 
 4. Precise examples / instructions to run this program:
 
 In separate shell windows:
 
-> java InetClient
-> java InetServer
+> java JokeServer
+> java JokeClient
+> java JokeClientAdmin
 
 This runs across machines, in which case you have to pass the IP address of
 the server to the clients. For exmaple, if the server is running at
 140.192.1.22 then you would type:
 
-> java InetClient 140.192.1.22
-> java InetServer 140.192.1.22
+> java JokeClient 140.192.1.22
+> java JokeClientAdmin 140.192.1.22
 
 5. List of files needed for running the program.
 
-InetClient.java
-InetServer.java
+JokeServer.java
+JokeClient.java
+JokeClientAdmin.java
 
 6. Notes:
 

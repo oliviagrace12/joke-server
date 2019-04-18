@@ -1,34 +1,36 @@
 /*--------------------------------------------------------
 
-1. Name / Date: Olivia Chisman / 4.9.19
+1. Name / Date: Olivia Chisman / 4.17.19
 
 2. Java version used, if not the official version for the class:
 
-build 9.0.1+11 
+build 9.0.1+11
 
 3. Precise command-line compilation examples / instructions:
 
-> javac InetServer.java
+> javac JokeServer.java
 
 
 4. Precise examples / instructions to run this program:
 
 In separate shell windows:
 
-> java InetClient
-> java InetServer
+> java JokeServer
+> java JokeClient
+> java JokeClientAdmin
 
 This runs across machines, in which case you have to pass the IP address of
 the server to the clients. For exmaple, if the server is running at
 140.192.1.22 then you would type:
 
-> java InetClient 140.192.1.22
-> java InetServer 140.192.1.22
+> java JokeClient 140.192.1.22
+> java JokeClientAdmin 140.192.1.22
 
 5. List of files needed for running the program.
 
-InetClient.java
-InetServer.java
+JokeServer.java
+JokeClient.java
+JokeClientAdmin.java
 
 6. Notes:
 
@@ -43,8 +45,6 @@ public class JokeServer {
     private static final int CLIENT_PORT = 4545;
     // defining the port on which to start the server socket for admin connections
     private static final int ADMIN_PORT = 5050;
-    private static final String JOKE_MODE = "JOKE MODE";
-    private static final String PROVERB_MODE = "PROVERB MODE";
 
     private static boolean jokeMode;
 
@@ -64,7 +64,7 @@ public class JokeServer {
 
         // letting the user know that the server has started, and on which port
         String greeting = "Olivia Chisman's Inet server 1.8 starting up in " + getModeName()
-                + " mode, listening to port " + CLIENT_PORT + ".\n";
+                + " mode, listening to client port " + CLIENT_PORT + " and admin port " + ADMIN_PORT + ".\n";
         // writing to console
         System.out.println(greeting);
         // writing to log file
@@ -75,7 +75,7 @@ public class JokeServer {
 
     public static String getModeName() {
         // returns the joke mode string based on the jokeMode variable being true or not
-        return jokeMode ? JOKE_MODE : PROVERB_MODE;
+        return jokeMode ? "JOKE MODE" : "PROVERB MODE";
     }
 
     // returns true if server is in joke mode
@@ -90,7 +90,9 @@ public class JokeServer {
 }
 
 class ClientThread extends Thread {
+    // server socket to accept connections from clients
     private ServerSocket serverSocket;
+    // file writer to write to log file
     private final Writer fileWriter;
 
     public ClientThread(ServerSocket serverSocket, Writer fileWriter) {
@@ -121,7 +123,8 @@ class AdminThread extends Thread {
     private ServerSocket serverSocket;
     private Writer fileWriter;
 
-    // takes a server socket to pass to the admin, as well as a file writer to log admin interactions to the log file
+    // takes a server socket to accept admin connections, as well as a file writer to log
+    // admin interactions to the log file
     public AdminThread(ServerSocket serverSocket, Writer fileWriter) {
         this.serverSocket = serverSocket;
         this.fileWriter = fileWriter;
@@ -132,7 +135,7 @@ class AdminThread extends Thread {
         while (true) {
             try {
                 // If any admins connect, the server mode variable with be switched to the opposite
-                serverSocket.accept();
+                Socket socket = serverSocket.accept();
                 JokeServer.switchMode();
                 // Logging server mode
                 String serverStatus = "Server now in " + JokeServer.getModeName();
@@ -140,6 +143,10 @@ class AdminThread extends Thread {
                 // Writing mode change to log file
                 fileWriter.write(serverStatus + "\n");
                 fileWriter.flush();
+                // creating a stream to write to the socket, sending data back to the admin
+                PrintStream toAdmin = new PrintStream(socket.getOutputStream());
+                // sending server mode status back to admin
+                toAdmin.println(serverStatus);
             } catch (IOException e) {
                 e.printStackTrace();
             }
